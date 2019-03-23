@@ -8,7 +8,7 @@
 #include <algorithm>
 #include "Node.h"
 
-const int MAX_SIZE = 25;
+const int MAX_SIZE = 4;
 int countList[MAX_SIZE]; 
 
 
@@ -109,6 +109,7 @@ void balance(Node* root, vector<long long int> sortedQuota)
         int leftStarting = 0;
         long long int sortedQuotaTotal = sortedQuota[leftStarting];
         long long int leftQuotaTotal = 1;
+        printVector(copyQuota);
         root->left->setQuotaValue(findAndZero(copyQuota, sortedQuota[0]), 1);
         if(sortedQuota[0] != 2)
         {
@@ -192,8 +193,8 @@ int main()
         } 
         else
             cout << "Failed at case: " << i << endl; 
-        // printCountList();
-        // root->printGraph(MAX_SIZE, root);
+        printCountList(i);
+        root->printGraph(MAX_SIZE, root);
     }
     return 0;
 }

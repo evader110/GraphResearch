@@ -24,15 +24,24 @@
 using namespace std;
 
 /* RESOURCES */
-vector<int> startQuota;
 stack< vector<int> > paintStack;
-int countList = 0;
+long long int countList = 0;
+
+/* DEFINITIONS */
+void createQuota(vector<int>& startQuota, int n);
+void printQuota(vector<int>& quota);
+vector<int> copyQuotaByValue(vector<int>& quota);
+vector<int> quotaSort(vector<int> quota);
+vector<vector<int> > balance(vector<int>& quota);
+void paintGraphCorrectly(vector<int>& quota);
 
 /* FUNCTIONS */
-void createQuota(int n)
+void createQuota(vector<int>& startQuota, int n)
 {
     for(int i = 0; i < n; i++)
+    {
         startQuota.push_back(1);
+    }
     startQuota[0] = 1;
     if(n > 1)
     {
@@ -46,7 +55,7 @@ void createQuota(int n)
     }
 }
 
-vector<int> copyQuotaByValue(vector<int> quota)
+vector<int> copyQuotaByValue(vector<int>& quota)
 {
     vector<int> copyQuota;
     for(vector<int>::iterator it = quota.begin(); it != quota.end(); ++it)
@@ -56,8 +65,10 @@ vector<int> copyQuotaByValue(vector<int> quota)
 
 vector<int> quotaSort(vector<int> quota)
 {
-    vector<int> sortedQuota = quota;
+    vector<int> sortedQuota = copyQuotaByValue(quota);
     sort(sortedQuota.begin(), sortedQuota.end());
+    while(*quota.begin() == 0)
+        sortedQuota.erase(sortedQuota.begin());
     return sortedQuota;
 }
 
@@ -77,24 +88,24 @@ int findAndZero(vector<int> &copy, int key)
 
     if(begin != end)
     {
-        copy.erase(begin);
+        copy[index] = 0;
         return index;
     }
-
     return -1;
 }
 
-vector< vector<int> > balance(vector<int> quota, vector<int> sortedQuota)
+vector<vector<int> > balance(vector<int>& quota)
 {
+    vector<int> sortedQuota = quotaSort(quota);
     if(sortedQuota.size() > 0)
     {
         vector<int> copyQuota = copyQuotaByValue(quota);
         int leftStarting = 0;
         int sortedQuotaTotal = sortedQuota[leftStarting];
         int leftQuotaTotal = 1;
-        vector<int> leftQuota = quota;
-        leftQuota[findAndZero(copyQuota, sortedQuota[0])] = 1;
-        if(sortedQuota[0] != 2)
+        vector<int> leftQuota = copyQuota;
+        leftQuota[findAndZero(copyQuota, sortedQuota[leftStarting])] = 1;
+        if(sortedQuota[leftStarting] != 2)
         {
             leftStarting++;
             leftQuota[findAndZero(copyQuota, sortedQuota[leftStarting])] = sortedQuota[leftStarting] - 1; 
@@ -114,50 +125,67 @@ vector< vector<int> > balance(vector<int> quota, vector<int> sortedQuota)
             leftQuota[findAndZero(copyQuota, sortedQuota[i])] = nextLeftQuotaValue;
             leftQuotaTotal += nextLeftQuotaValue;
         }
-        size = quota.size();
-        vector<int> rightQuota = quota;
+        size = leftQuota.size();
+        vector<int> rightQuota(copyQuotaByValue(quota));
         for(int i = 0; i < size; i++)
             rightQuota[i] = quota[i] - leftQuota[i];
-        vector<int> returnQuotas[2];
-        returnQuotas[0] = leftQuota;
-        returnQuotas[1] = rightQuota; 
+        vector<vector<int> > returnQuotas;
+        returnQuotas.push_back(leftQuota);
+        returnQuotas.push_back(rightQuota); 
         return returnQuotas;
     }
 }
 
-void paintGraphCorrectly(vector<int> quota)
+void paintGraphCorrectly(vector<int>& quota)
 {
-
     int size = quota.size();
     for(int i = 0; i < size; i++)
     {
         if(quota[i] == 1)
         {
-            quota.erase(i);
+            quota.erase(quota.begin() + i);
             countList++;
             break;
         }
     }
-
-    if(size <= 1)
+    if(size > 1)
     {
-        vector< vector<int> > returnQuotas = balance(quota, quotaSort(root->getQuota()));
+        vector<vector<int> > returnQuotas = balance(quota);
         paintStack.push(returnQuotas[0]);
         paintStack.push(returnQuotas[1]);
-
     }
+}
+
+void printQuota(vector<int>& quota)
+{
+    vector<int>::iterator i;
+    cout << "[ ";
+    for(i = quota.begin(); i < quota.end(); i++)
+    {
+        cout << *i << " "; 
+    }
+    cout << "]" << endl;
 }
 
 int main()
 {
-    int caseSize = 4;
-    createQuota(caseSize);
-    paintStack.push(startQuota);
-    while(!paintStack.empty())
+    int caseSize = 30;
+    for(int i = 1; i <= caseSize; i++)
     {
-        vector<int> top = paintStack.top();
-        paintStack.pop();
-        paintGraphCorrectly(top);
+        vector<int> startQuota;
+        
+        createQuota(startQuota, i);
+        paintStack.push(startQuota);
+        cout << "Case " << i << ":" << endl;
+        printQuota(startQuota);
+        while(!paintStack.empty())
+        {
+            vector<int> top = paintStack.top();
+            paintStack.pop();
+            paintGraphCorrectly(top);
+        }
+        cout << countList << endl;
+        countList = 0;
     }
     return 0;
 }
